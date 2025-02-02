@@ -32,18 +32,15 @@ get_edit_distance <- function(apt1, apt2) {
 edit_dists = dist_make(as.matrix(selex_data), get_edit_distance)
 
 # create ball mapper object with edit distances
-aptamerballs = create_ball_mapper_object(selex_data, edit_dists, 10)
+aptamerballs = create_ball_mapper_object(selex_data, edit_dists, 2)
 
 # get aptamers in vertices of ballmapper graph
 balled_aptamers = lapply(aptamerballs[[1]]$data, function(x) selex_data[unlist(strsplit(x, ", ")),])
 
-# find mean human/mouse affinity per ballmapper vertex
-mean_human_affinity = sapply(balled_aptamers, function(x) mean(selex_data[x$Name, "ASSET.hVSMC.hEC"]))
-mean_mouse_affinity = sapply(balled_aptamers, function(x) mean(selex_data[x$Name, "ASSET.mVSMC.mEC"]))
-
-# add mean affinity to vertex data
-aptamerballs[[1]]$mean_human_affinity = mean_human_affinity
-aptamerballs[[1]]$mean_mouse_affinity = mean_mouse_affinity
+# calculate median round amounts for the aptamers in each vertex
+rounds = c("RP10M 0A", "RP10M 0B", "RP10M 0C", "RP10M 1A", "RP10M 1B", "RP10M 1C", "RP10M 2A", "RP10M 2B", "RP10M 2C", "RP10M 3A", "RP10M 3B", "RP10M 3C", "RP10M 4", "RP10M 5", "RP10M 6", "RP10M 7", "RP10M 8", "RP10M 9")
+medians = sapply(balled_aptamers, function(x) sapply(rounds, function(r) median(selex_data[x$Name, r])))
+aptamerballs[[1]][rounds] = t(medians)
 
 # send ballmapper data to cytoscape
 cymapper(aptamerballs, is_ballmapper = TRUE)
