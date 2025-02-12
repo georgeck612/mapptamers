@@ -1,6 +1,6 @@
 # install mappeR software
 require(devtools)
-install_github("https://github.com/Uiowa-Applied-Topology/mappeR/tree/cytoscape")
+install_github("https://github.com/Uiowa-Applied-Topology/mappeR/tree/cytoscape", force = TRUE)
 # install.packages("mappeR")
 library(mappeR)
 
@@ -43,13 +43,14 @@ mapptamer1 = create_clusterball_mapper_object(node_data, tree_dists, edit_dists,
 mapptamer2 = create_clusterball_mapper_object(node_data, tree_dists, edit_dists, 20, "single")
 mapptamer3 = create_clusterball_mapper_object(node_data, tree_dists, edit_dists, 10, "single")
 mapptamer4 = create_clusterball_mapper_object(node_data, tree_dists, edit_dists, 5, "single")
-mapptamer5 = create_1D_mapper_object(node_data, tree_dists, ecc, create_width_balanced_cover(min(ecc), max(ecc), 5, 10), "single")
-mapptamer6 = create_1D_mapper_object(node_data, edit_dists, ecc2, create_width_balanced_cover(min(ecc2), max(ecc2), 5, 10), "single")
+
+treemapper = create_1D_mapper_object(node_data, tree_dists, ecc, create_width_balanced_cover(min(ecc), max(ecc), 5, 25), "single")
+editmapper = create_1D_mapper_object(node_data, edit_dists, ecc2, create_width_balanced_cover(min(ecc2), max(ecc2), 5, 25), "single")
 
 # visualize in Cytoscape
 cymapper(mapptamer1)
 cymapper(mapptamer2)
 cymapper(mapptamer3)
 cymapper(mapptamer4)
-cymapper(mapptamer5)
-cymapper(mapptamer6)
+cymapper(treemapper)
+cymapper(editmapper)
