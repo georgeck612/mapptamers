@@ -1,0 +1,11 @@
+The SELEX process
+
+Our hypothesis is that aptamers whose genetic sequences are close together in terms of edit distance will have similar affinities towards the same target cell.
+
+First, we decompose our dataset into a patchwork of overlapping "balls" of aptamers, where each ball contains a collection of aptamers no more than a fixed edit distance away from any other. Since the balls are overlapping, we can then construct a network by defining nodes as balls of aptamers, and edges between nodes exist if there is an aptamer in common to the balls represented by the nodes.
+
+This construction, called a *ball mapper* graph in our terminology, allows us to obtain a visual "map" of the entire starting aptamer library. Here a larger node size corresponds to one of our patches containing more aptamers, and its brightness corresponds to the average shortest distance between any two aptamers in the patch, which is a measure of *eccentricity.*
+
+Now we can investigate the SELEX process using the mapper graph. During SELEX, aptamers undergo rounds of positive and negative selection; during positive selection aptamers are allowed to bind to a desired target molecule; those which do not are removed from the pool. During negative selection, aptamers are allowed to bind to a *non*-target molecule; those that do are removed from the pool. At each round, measurements for each aptamer are taken in *reads per 10 million* (RP10M).
+
+Superimposing this round data onto the mapper graph allows us to see the SELEX process play out in real time. Adjusting node size to correspond to some RP10M statistic of a group of aptamers lets us visually pick out which "families," if any, are being selected for or against across rounds.
