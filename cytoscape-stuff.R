@@ -1,5 +1,5 @@
 # Cytoscape ---------------------------------------------------------------
-
+library(RCy3)
 
 visualize_mapper_data <- function(mapper_data, is_ballmapper = TRUE) {
   nodes = mapper_data[[1]]
