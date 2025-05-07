@@ -61,3 +61,11 @@ aptamerballs[[1]]$enrichment = log2(aptamerballs[[1]]$"RP10M 9"/aptamerballs[[1]
 # send mapper data to cytoscape
 cymapper(aptamerballs, is_ballmapper = TRUE)
 
+assets = selex_data$`ASSET hVSMC:hEC`
+num_patches = 5
+percent_overlap = 20
+
+assetmapper = create_1D_mapper_object(selex_data, edit_dists, selex_data$`ASSET hVSMC:hEC`, create_width_balanced_cover(min(assets), max(assets), num_patches, percent_overlap))
+
+cymapper(assetmapper)
+
