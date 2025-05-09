@@ -1,0 +1,92 @@
+if(!require("BiocManager")) {
+  install.packages("BiocManager", repos = "https://cloud.r-project.org")
+  BiocManager::install("RCy3", force=TRUE)
+}
+
+library(mappeR)
+library(RCy3)
+
+source("cytoscape-stuff.R")
+
+# I don't think there are actually missing values but I can't trust myself
+node_data = na.omit(as.data.frame(read.csv("data/top-nodes.csv")))
+edge_data = na.omit(as.data.frame(read.csv("data/top-edges.csv")))
+
+total_aptamers = nrow(node_data)
+
+# create empty edit distance matrix
+edit_dists = matrix(0, nrow = total_aptamers, ncol = total_aptamers)
+
+# flatten interactions column into a list of strings formatted as
+# ["source aptamer", "to", "target aptamer"]
+squished_edges = unlist(strsplit(edge_data$name, " "))
+
+# recover sources/targets via above formatting
+sources = squished_edges[seq(1, length(squished_edges), 3)]
+targets = squished_edges[seq(3, length(squished_edges), 3)]
+
+# grab entire source/target aptamer observations from mother dataset
+row_indices = match(sources, node_data$name)
+col_indices = match(targets, node_data$name)
+
+# populate edit distance matrix
+edit_dists[cbind(row_indices, col_indices)] = edge_data$editDistance
+edit_dists[cbind(col_indices, row_indices)] = edge_data$editDistance
+
+# not sure if necessary but I did it last time and it doesn't hurt to leave it
+row.names(edit_dists) = node_data$name
+colnames(edit_dists) = node_data$name
+
+# create empty tree distance matrix
+tree_dists = matrix(0, nrow = total_aptamers, ncol = total_aptamers)
+
+# populate tree distance matrix
+tree_dists[cbind(row_indices, col_indices)] = edge_data$treeDistance
+tree_dists[cbind(col_indices, row_indices)] = edge_data$treeDistance
+
+# again I'm being paranoid
+row.names(tree_dists) = node_data$name
+colnames(tree_dists) = node_data$name
+
+# making sure R doesn't have any cause to yell at me
+row.names(node_data) = node_data$name
+
+# function which makes a ballmapper graph and populates it with data
+create_mapptamer_graph <- function(dists, eps) {
+  # mapper time
+  mapptamer = create_ball_mapper_object(node_data, dists, eps)
+
+  # get aptamers in vertices of mapper graph
+  aptamer_balls = lapply(mapptamer[[1]]$data, function(x) node_data[unlist(strsplit(x, ", ")),])
+
+  # calculate median selex data across mapper vertices
+  median_log10_final_selex_read = sapply(aptamer_balls, function(x) median(node_data[x$name, "Log.10.RP10M.9"]))
+  median_log2_selex_enrichment = sapply(aptamer_balls, function(x) median(node_data[x$name, "Log2.R3.9"]))
+
+  # calculate median ASSET data across mapper vertices
+  median_human_affinity = sapply(aptamer_balls, function(x) median(node_data[x$name, "hVSMC.hEC"]))
+  median_log2_human_affinity = sapply(aptamer_balls, function(x) median(node_data[x$name, "Log2.hVSMC.hEC"]))
+  median_mouse_affinity = sapply(aptamer_balls, function(x) median(node_data[x$name, "mVSMC.mEC"]))
+  median_log2_mouse_affinity = sapply(aptamer_balls, function(x) median(node_data[x$name, "mVSMC.mEC"]))
+
+  # attach calculated info to mapper dataframe
+  mapptamer[[1]]$median_log10_final_selex_read = median_log10_final_selex_read
+  mapptamer[[1]]$median_log2_selex_enrichment = median_log2_selex_enrichment
+  mapptamer[[1]]$median_human_affinity = median_human_affinity
+  mapptamer[[1]]$median_log2_human_affinity = median_log2_human_affinity
+  mapptamer[[1]]$median_mouse_affinity = median_mouse_affinity
+  mapptamer[[1]]$median_log2__mouse_affinity = median_log2_human_affinity
+
+  return(mapptamer)
+}
+
+# this will crash when there are no edges, that's not a mappeR thing, that's an RCy3 thing
+for (eps in 2:8) {
+  mapptamer = create_mapptamer_graph(edit_dists, eps)
+  cymapper(mapptamer, is_ballmapper = TRUE)
+}
+
+for (eps in 2:52) {
+  mapptamer = create_mapptamer_graph(tree_dists, eps)
+  cymapper(mapptamer, is_ballmapper = TRUE)
+}
