@@ -12,6 +12,9 @@ source("cytoscape-stuff.R")
 node_data = na.omit(as.data.frame(read.csv("data/top-nodes.csv")))
 edge_data = na.omit(as.data.frame(read.csv("data/top-edges.csv")))
 
+# making sure R doesn't have any cause to yell at me
+row.names(node_data) = node_data$name
+
 total_aptamers = nrow(node_data)
 
 # create empty edit distance matrix
@@ -25,7 +28,7 @@ squished_edges = unlist(strsplit(edge_data$name, " "))
 sources = squished_edges[seq(1, length(squished_edges), 3)]
 targets = squished_edges[seq(3, length(squished_edges), 3)]
 
-# grab entire source/target aptamer observations from mother dataset
+# grab entire source/target aptamer locations in mother dataset
 row_indices = match(sources, node_data$name)
 col_indices = match(targets, node_data$name)
 
@@ -47,9 +50,6 @@ tree_dists[cbind(col_indices, row_indices)] = edge_data$treeDistance
 # again I'm being paranoid
 row.names(tree_dists) = node_data$name
 colnames(tree_dists) = node_data$name
-
-# making sure R doesn't have any cause to yell at me
-row.names(node_data) = node_data$name
 
 # function which makes a ballmapper graph and populates it with data
 create_mapptamer_graph <- function(dists, eps) {
@@ -82,11 +82,11 @@ create_mapptamer_graph <- function(dists, eps) {
 
 # this will crash when there are no edges, that's not a mappeR thing, that's an RCy3 thing
 for (eps in 2:8) {
-  mapptamer = create_mapptamer_graph(edit_dists, eps)
+  mapptamer = create_mapptamer_graph(edit_dists, 8)
   cymapper(mapptamer, is_ballmapper = TRUE)
 }
 
-for (eps in 2:52) {
+for (eps in 2:39) {
   mapptamer = create_mapptamer_graph(tree_dists, eps)
   cymapper(mapptamer, is_ballmapper = TRUE)
 }
