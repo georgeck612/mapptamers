@@ -6,8 +6,6 @@ if(!require("BiocManager")) {
 library(mappeR)
 library(RCy3)
 
-source("cytoscape-stuff.R")
-
 # I don't think there are actually missing values but I can't trust myself
 node_data = na.omit(as.data.frame(read.csv("data/top-nodes.csv")))
 edge_data = na.omit(as.data.frame(read.csv("data/top-edges.csv")))
@@ -80,13 +78,15 @@ create_mapptamer_graph <- function(dists, eps) {
   return(mapptamer)
 }
 
+source("cytoscape-stuff.R")
+
 # this will crash when there are no edges, that's not a mappeR thing, that's an RCy3 thing
 for (eps in 2:8) {
-  mapptamer = create_mapptamer_graph(edit_dists, 8)
-  cymapper(mapptamer, is_ballmapper = TRUE)
+  mapptamer = create_mapptamer_graph(edit_dists, eps)
+  cymapper(mapptamer, mapptamer[[1]]$median_log10_final_selex_read, mapptamer[[1]]$median_human_affinity, mapptamer[[1]]$cluster_size)
 }
 
 for (eps in 2:39) {
   mapptamer = create_mapptamer_graph(tree_dists, eps)
-  cymapper(mapptamer, is_ballmapper = TRUE)
+  cymapper(mapptamer, mapptamer[[1]]$median_log10_final_selex_read, mapptamer[[1]]$median_human_affinity, mapptamer[[1]]$cluster_size)
 }
