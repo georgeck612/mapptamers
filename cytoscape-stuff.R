@@ -1,49 +1,83 @@
 # Cytoscape ---------------------------------------------------------------
 
-visualize_mapper_data <- function(mapper_data, is_ballmapper = TRUE) {
+visualize_mapper_data <- function(mapper_data, size_attr, border_color_attr, fill_color_attr) {
   nodes = mapper_data[[1]]
   edges = mapper_data[[2]]
 
   createNetworkFromDataFrames(nodes, edges)
 
-  style.name = paste("mapperstyle", runif(1))
+  style.name = paste("selexstyle", runif(1))
+
   defaults <- list(
     NODE_SHAPE = "ellipse",
-    NODE_BORDER_WIDTH = 10,
-    NODE_BORDER_PAINT = "#000"
+    NODE_BORDER_WIDTH = 10
   )
 
   nodeSizes <- mapVisualProperty('node size',
-                                 'id',
+                                 'median_log10_final_selex_read',
                                  'd',
                                  1:nrow(nodes),
-                                 100 * sqrt(nodes$cluster_size / max(nodes$cluster_size)))
+                                 100 * size_attr / max(size_attr))
   edgeWidth <- mapVisualProperty('edge width', 'weight', 'c', c(0, .5, 1), c(0, 5, 10))
+  nodeFillColors <- mapVisualProperty('node fill color', 'cluster_size', 'c', c(min(fill_color_attr), max(fill_color_attr)), c('white', 'black'))
+  nodeBorderColors <- mapVisualProperty('node border paint', 'median_human_affinity', 'c', c(min(border_color_attr), median(border_color_attr), max(border_color_attr)), c('blue', 'gold', 'red'))
 
-  fill_colors = lapply(nodes$tightness / max(nodes$tightness), function(x)
-    rgb(x, x, x))
-
-  nodeFillColors <- mapVisualProperty('node fill color', 'id', 'd', 1:nrow(nodes), fill_colors)
-
-  if (is_ballmapper) {
-    # ballmapper needs no more styling
-    createVisualStyle(style.name,
-                      defaults,
-                      list(nodeSizes, edgeWidth, nodeFillColors))
-  } else {
-    # conventional mapper needs bin coloring
-    num_bins = length(unique(nodes$bin))
-    bin_colors = viridisLite::plasma(num_bins)
-    nodeBorderColors <- mapVisualProperty('node border color', 'bin', 'd', 1:num_bins, bin_colors)
-    createVisualStyle(
-      style.name,
-      defaults,
-      list(nodeSizes, edgeWidth, nodeBorderColors, nodeFillColors)
-    )
-  }
+  createVisualStyle(
+    style.name,
+    defaults,
+    list(nodeSizes, edgeWidth, nodeBorderColors, nodeFillColors)
+  )
 
   setVisualStyle(style.name)
+
+
+
 }
+
+# visualize_mapper_data <- function(mapper_data, is_ballmapper = TRUE) {
+#   nodes = mapper_data[[1]]
+#   edges = mapper_data[[2]]
+#
+#   createNetworkFromDataFrames(nodes, edges)
+#
+#   style.name = paste("mapperstyle", runif(1))
+#   defaults <- list(
+#     NODE_SHAPE = "ellipse",
+#     NODE_BORDER_WIDTH = 10,
+#     NODE_BORDER_PAINT = "#000"
+#   )
+#
+#   nodeSizes <- mapVisualProperty('node size',
+#                                  'id',
+#                                  'd',
+#                                  1:nrow(nodes),
+#                                  100 * sqrt(nodes$cluster_size / max(nodes$cluster_size)))
+#   edgeWidth <- mapVisualProperty('edge width', 'weight', 'c', c(0, .5, 1), c(0, 5, 10))
+#
+#   fill_colors = lapply(nodes$tightness / max(nodes$tightness), function(x)
+#     rgb(x, x, x))
+#
+#   nodeFillColors <- mapVisualProperty('node fill color', 'id', 'd', 1:nrow(nodes), fill_colors)
+#
+#   if (is_ballmapper) {
+#     # ballmapper needs no more styling
+#     createVisualStyle(style.name,
+#                       defaults,
+#                       list(nodeSizes, edgeWidth, nodeFillColors))
+#   } else {
+#     # conventional mapper needs bin coloring
+#     num_bins = length(unique(nodes$bin))
+#     bin_colors = viridisLite::plasma(num_bins)
+#     nodeBorderColors <- mapVisualProperty('node border color', 'bin', 'd', 1:num_bins, bin_colors)
+#     createVisualStyle(
+#       style.name,
+#       defaults,
+#       list(nodeSizes, edgeWidth, nodeBorderColors, nodeFillColors)
+#     )
+#   }
+#
+#   setVisualStyle(style.name)
+# }
 
 #' Open mapper graph in Cytoscape
 #'
@@ -67,9 +101,9 @@ visualize_mapper_data <- function(mapper_data, is_ballmapper = TRUE) {
 #' mapperobj = create_1D_mapper_object(data, dist(data), projx, cover, "single")
 #' cymapper(mapperobj)
 #' }
-cymapper <- function(mapperobject, is_ballmapper = FALSE) {
+cymapper <- function(mapper_data, size_attr, border_color_attr, fill_color_attr) {
   # pass to visualizer for........visualizing...
-  visualize_mapper_data(mapperobject, is_ballmapper)
+  visualize_mapper_data(mapper_data, size_attr, border_color_attr, fill_color_attr)
 
   # if this isn't here R will print something useless
   return(invisible(NULL))
