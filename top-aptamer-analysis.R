@@ -6,6 +6,10 @@ if(!require("BiocManager")) {
 library(mappeR)
 library(RCy3)
 
+
+# data input and distance matrix creation ---------------------------------
+
+
 # I don't think there are actually missing values but I can't trust myself
 node_data = na.omit(as.data.frame(read.csv("data/top-nodes.csv")))
 edge_data = na.omit(as.data.frame(read.csv("data/top-edges.csv")))
@@ -48,6 +52,10 @@ tree_dists[cbind(col_indices, row_indices)] = edge_data$treeDistance
 # again I'm being paranoid
 row.names(tree_dists) = node_data$name
 colnames(tree_dists) = node_data$name
+
+
+# mapper graph creation ---------------------------------------------------
+
 
 # function which makes a ballmapper graph and populates it with data
 create_ballmapptamer_graph <- function(dists, eps) {
@@ -120,7 +128,7 @@ source("cytoscape-stuff.R")
 #   cymapper(mapptamer, mapptamer[[1]]$median_log10_final_selex_read, mapptamer[[1]]$median_human_affinity, mapptamer[[1]]$cluster_size)
 # }
 
-num_patches = 5
+num_patches = 4
 percent_overlap = 25
 cover = create_width_balanced_cover(min(node_data$Log2.hVSMC.hEC), max(node_data$Log2.hVSMC.hEC), num_patches, percent_overlap)
 mapptamer = create_mapptamer_graph(edit_dists, node_data$Log2.hVSMC.hEC, cover)
