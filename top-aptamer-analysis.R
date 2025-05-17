@@ -85,7 +85,7 @@ colnames(tree_dists) = node_data$name
 #
 #   return(mapptamer)
 # }
-source("aptamer_clusterer.R")
+
 # function which makes a ballmapper graph and populates it with data
 create_mapptamer_graph <- function(dists, filtered, cover, linkage_method) {
   # mapper time
@@ -128,6 +128,8 @@ source("cytoscape-stuff.R")
 #   mapptamer = create_ballmapptamer_graph(tree_dists, eps)
 #   cymapper(mapptamer, mapptamer[[1]]$median_log10_final_selex_read, mapptamer[[1]]$median_human_affinity, mapptamer[[1]]$cluster_size)
 # }
+
+source("aptamer_clusterer.R")
 
 num_patches = 4
 percent_overlap = 25
