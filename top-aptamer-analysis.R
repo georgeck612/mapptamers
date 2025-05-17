@@ -87,9 +87,9 @@ colnames(tree_dists) = node_data$name
 # }
 source("aptamer_clusterer.R")
 # function which makes a ballmapper graph and populates it with data
-create_mapptamer_graph <- function(dists, filtered, cover, cut_height) {
+create_mapptamer_graph <- function(dists, filtered, cover, linkage_method) {
   # mapper time
-  mapptamer = create_1D_mapper_object(node_data, dists, filtered, cover, clusterer = apt_hierarchical_clusterer("complete", cut_height))
+  mapptamer = create_1D_mapper_object(node_data, dists, filtered, cover, clusterer = global_tallest_hierarchical_clusterer(linkage_method, as.dist(dists)))
 
   # get aptamers in vertices of mapper graph
   aptamer_balls = lapply(mapptamer[[1]]$data, function(x) node_data[unlist(strsplit(x, ", ")),])
@@ -131,7 +131,14 @@ source("cytoscape-stuff.R")
 
 num_patches = 4
 percent_overlap = 25
-cut_height = 2
+edit_cut_height = median(edge_data$editDistance)
+tree_cut_height = median(edge_data$treeDistance)
+linkage_type = "single"
+projection = node_data$Log2.hVSMC.hEC
 cover = create_width_balanced_cover(min(node_data$Log2.hVSMC.hEC), max(node_data$Log2.hVSMC.hEC), num_patches, percent_overlap)
-mapptamer = create_mapptamer_graph(edit_dists, node_data$Log2.hVSMC.hEC, cover, cut_height)
-cymapper(mapptamer, mapptamer[[1]]$median_log10_final_selex_read, mapptamer[[1]]$median_human_affinity, mapptamer[[1]]$cluster_size)
+
+single_edit_mapptamer = create_mapptamer_graph(edit_dists, projection, cover, "single")
+single_tree_mapptamer = create_mapptamer_graph(tree_dists, projection, cover, "single")
+complete_edit_mapptamer = create_mapptamer_graph(edit_dists, projection, cover, "complete")
+complete_tree_mapptamer = create_mapptamer_graph(tree_dists, projection, cover, "complete")
+# cymapper(mapptamer, mapptamer[[1]]$median_log10_final_selex_read, mapptamer[[1]]$median_human_affinity, mapptamer[[1]]$cluster_size)
