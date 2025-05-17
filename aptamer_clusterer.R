@@ -144,11 +144,12 @@ get_tallest_branch_height <- function(dend) {
 #' create_1D_mapper_object(data, dist(data), projx, cover, hierarchical_clusterer("mcquitty"))
 global_tallest_hierarchical_clusterer <- function(method, dists) {
   global_linkage = as.dendrogram(run_link(dists, method))
-  set(global_linkage)
-  dend_plot = as.ggdend(global_linkage)
-
+  plot(hang.dendrogram(global_linkage, hang = -1), main = paste(method, "linkage clustering"))
   cut_height = get_tallest_branch_height(global_linkage)
-  ggplot(dend_plot) + geom_hline(yintercept = cut_height, lty = 2)
+
+  abline(h=cut_height)
+  dend_plot = as.ggdend(global_linkage)
+  # print(ggplot(dend_plot) + geom_hline(yintercept = cut_height, lty = 2))
   print(cut_height)
   return(function(dist_mats) get_hierarchical_clusters(dist_mats, method, cut_height))
 }
