@@ -129,6 +129,10 @@ source("cytoscape-stuff.R")
 #   cymapper(mapptamer, mapptamer[[1]]$median_log10_final_selex_read, mapptamer[[1]]$median_human_affinity, mapptamer[[1]]$cluster_size)
 # }
 
+cytoviz = function(mapptamer) {
+  cymapper(mapptamer, mapptamer[[1]]$median_log10_final_selex_read, mapptamer[[1]]$median_human_affinity, mapptamer[[1]]$cluster_size)
+}
+
 source("aptamer_clusterer.R")
 
 num_patches = 4
@@ -142,6 +146,11 @@ single_tree_affinity_mapptamer = create_mapptamer_graph(tree_dists, affinity_pro
 complete_edit_affinity_mapptamer = create_mapptamer_graph(edit_dists, affinity_projection, affinity_cover, "complete")
 complete_tree_affinity_mapptamer = create_mapptamer_graph(tree_dists, affinity_projection, affinity_cover, "complete")
 
+cytoviz(single_edit_affinity_mapptamer)
+cytoviz(single_tree_affinity_mapptamer)
+cytoviz(complete_edit_affinity_mapptamer)
+cytoviz(complete_tree_affinity_mapptamer)
+
 selex_projection = node_data$Log2.R3.9
 selex_cover = create_width_balanced_cover(min(selex_projection), max(selex_projection), num_patches, percent_overlap)
 
@@ -150,4 +159,7 @@ single_tree_selex_mapptamer = create_mapptamer_graph(tree_dists, selex_projectio
 complete_edit_selex_mapptamer = create_mapptamer_graph(edit_dists, selex_projection, selex_cover, "complete")
 complete_tree_selex_mapptamer = create_mapptamer_graph(tree_dists, selex_projection, selex_cover, "complete")
 
-# cymapper(mapptamer, mapptamer[[1]]$median_log10_final_selex_read, mapptamer[[1]]$median_human_affinity, mapptamer[[1]]$cluster_size)
+cytoviz(single_edit_selex_mapptamer)
+cytoviz(single_tree_selex_mapptamer)
+cytoviz(complete_edit_selex_mapptamer)
+cytoviz(complete_tree_selex_mapptamer)
