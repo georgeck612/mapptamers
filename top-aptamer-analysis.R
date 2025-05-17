@@ -89,6 +89,7 @@ colnames(tree_dists) = node_data$name
 # function which makes a ballmapper graph and populates it with data
 create_mapptamer_graph <- function(dists, filtered, cover, linkage_method) {
   # mapper time
+  print(filtered)
   mapptamer = create_1D_mapper_object(node_data, dists, filtered, cover, clusterer = global_tallest_hierarchical_clusterer(linkage_method, as.dist(dists)))
 
   # get aptamers in vertices of mapper graph
@@ -97,6 +98,7 @@ create_mapptamer_graph <- function(dists, filtered, cover, linkage_method) {
   # calculate median selex data across mapper vertices
   median_log10_final_selex_read = sapply(aptamer_balls, function(x) median(node_data[x$name, "Log.10.RP10M.9"]))
   median_log2_selex_enrichment = sapply(aptamer_balls, function(x) median(node_data[x$name, "Log2.R3.9"]))
+  print(median_log2_selex_enrichment)
 
   # calculate median ASSET data across mapper vertices
   median_human_affinity = sapply(aptamer_balls, function(x) median(node_data[x$name, "hVSMC.hEC"]))
@@ -105,12 +107,12 @@ create_mapptamer_graph <- function(dists, filtered, cover, linkage_method) {
   median_log2_mouse_affinity = sapply(aptamer_balls, function(x) median(node_data[x$name, "mVSMC.mEC"]))
 
   # attach calculated info to mapper dataframe
-  mapptamer[[1]]$median_log10_final_selex_read = median_log10_final_selex_read
-  mapptamer[[1]]$median_log2_selex_enrichment = median_log2_selex_enrichment
-  mapptamer[[1]]$median_human_affinity = median_human_affinity
-  mapptamer[[1]]$median_log2_human_affinity = median_log2_human_affinity
-  mapptamer[[1]]$median_mouse_affinity = median_mouse_affinity
-  mapptamer[[1]]$median_log2__mouse_affinity = median_log2_mouse_affinity
+  mapptamer[[1]]$median_log10_final_selex_read = round(median_log10_final_selex_read, 5)
+  mapptamer[[1]]$median_log2_selex_enrichment = round(median_log2_selex_enrichment, 5)
+  mapptamer[[1]]$median_human_affinity = round(median_human_affinity, 5)
+  mapptamer[[1]]$median_log2_human_affinity = round(median_log2_human_affinity, 5)
+  mapptamer[[1]]$median_mouse_affinity = round(median_mouse_affinity, 5)
+  mapptamer[[1]]$median_log2__mouse_affinity = round(median_log2_mouse_affinity, 5)
 
   return(mapptamer)
 }
@@ -129,15 +131,38 @@ source("cytoscape-stuff.R")
 #   cymapper(mapptamer, mapptamer[[1]]$median_log10_final_selex_read, mapptamer[[1]]$median_human_affinity, mapptamer[[1]]$cluster_size)
 # }
 
-cytoviz = function(mapptamer) {
-  cymapper(mapptamer, mapptamer[[1]]$median_log10_final_selex_read, mapptamer[[1]]$median_human_affinity, mapptamer[[1]]$cluster_size)
+# NODE SIZE: selex enrichment
+# NODE BORDER COLOR: human affinity
+# NODE FILL COLOR: average distance to medoid
+cytoviz1 = function(mapptamer, name) {
+  size_col = "median_log2_selex_enrichment"
+  size_data = sort(mapptamer[[1]][, size_col])
+  border_color_col = "median_log2_human_affinity"
+  border_color_data = sort(mapptamer[[1]][, border_color_col])
+  fill_color_col = "tightness"
+  fill_color_data = sort(mapptamer[[1]][, fill_color_col])
+  visualize_mapper_data(mapptamer, size_col, size_data, border_color_col, border_color_data, fill_color_col, fill_color_data, name)
+}
+
+# NODE SIZE: human affinity
+# NODE BORDER COLOR: selex enrichment
+# NODE FILL COLOR: average distance to medoid
+cytoviz2 = function(mapptamer, name) {
+  size_col = "median_log2_human_affinity"
+  size_data = sort(mapptamer[[1]][, size_col])
+  border_color_col = "median_log2_selex_enrichment"
+  border_color_data = sort(mapptamer[[1]][, border_color_col])
+  print(border_color_data)
+  print(sort(border_color_data))
+  fill_color_col = "tightness"
+  fill_color_data = sort(mapptamer[[1]][, fill_color_col])
+  visualize_mapper_data(mapptamer, size_col, size_data, border_color_col, border_color_data, fill_color_col, fill_color_data, name)
 }
 
 source("aptamer_clusterer.R")
 
-num_patches = 4
+num_patches = 10
 percent_overlap = 25
-linkage_type = "single"
 affinity_projection = node_data$Log2.hVSMC.hEC
 affinity_cover = create_width_balanced_cover(min(affinity_projection), max(affinity_projection), num_patches, percent_overlap)
 
@@ -146,10 +171,10 @@ single_tree_affinity_mapptamer = create_mapptamer_graph(tree_dists, affinity_pro
 complete_edit_affinity_mapptamer = create_mapptamer_graph(edit_dists, affinity_projection, affinity_cover, "complete")
 complete_tree_affinity_mapptamer = create_mapptamer_graph(tree_dists, affinity_projection, affinity_cover, "complete")
 
-cytoviz(single_edit_affinity_mapptamer)
-cytoviz(single_tree_affinity_mapptamer)
-cytoviz(complete_edit_affinity_mapptamer)
-cytoviz(complete_tree_affinity_mapptamer)
+cytoviz1(single_edit_affinity_mapptamer, "1d_affinity_lens_single_linkage_edit_distance")
+cytoviz1(single_tree_affinity_mapptamer, "1d_affinity_lens_single_linkage_tree_distance")
+cytoviz1(complete_edit_affinity_mapptamer, "1d_affinity_lens_complete_linkage_edit_distance")
+cytoviz1(complete_tree_affinity_mapptamer, "1d_affinity_lens_complete_linkage_tree_distance")
 
 selex_projection = node_data$Log2.R3.9
 selex_cover = create_width_balanced_cover(min(selex_projection), max(selex_projection), num_patches, percent_overlap)
@@ -159,7 +184,7 @@ single_tree_selex_mapptamer = create_mapptamer_graph(tree_dists, selex_projectio
 complete_edit_selex_mapptamer = create_mapptamer_graph(edit_dists, selex_projection, selex_cover, "complete")
 complete_tree_selex_mapptamer = create_mapptamer_graph(tree_dists, selex_projection, selex_cover, "complete")
 
-cytoviz(single_edit_selex_mapptamer)
-cytoviz(single_tree_selex_mapptamer)
-cytoviz(complete_edit_selex_mapptamer)
-cytoviz(complete_tree_selex_mapptamer)
+cytoviz2(single_edit_selex_mapptamer, "1d_selex_enrichment_lens_single_linkage_edit_distance")
+cytoviz2(single_tree_selex_mapptamer, "1d_selex_enrichment_lens_single_linkage_tree_distance")
+cytoviz2(complete_edit_selex_mapptamer, "1d_selex_enrichment_lens_complete_linkage_edit_distance")
+cytoviz2(complete_tree_selex_mapptamer, "1d_selex_enrichment_lens_complete_linkage_tree_distance")

@@ -1,39 +1,3 @@
-# Cytoscape ---------------------------------------------------------------
-
-visualize_mapper_data <- function(mapper_data, size_attr, border_color_attr, fill_color_attr) {
-  nodes = mapper_data[[1]]
-  edges = mapper_data[[2]]
-
-  createNetworkFromDataFrames(nodes, edges)
-
-  style.name = paste("selexstyle", runif(1))
-
-  defaults <- list(
-    NODE_SHAPE = "ellipse",
-    NODE_BORDER_WIDTH = 10
-  )
-
-  nodeSizes <- mapVisualProperty('node size',
-                                 'median_log10_final_selex_read',
-                                 'd',
-                                 1:nrow(nodes),
-                                 100 * size_attr / max(size_attr))
-  edgeWidth <- mapVisualProperty('edge width', 'weight', 'c', c(0, .5, 1), c(0, 5, 10))
-  nodeFillColors <- mapVisualProperty('node fill color', 'cluster_size', 'c', c(min(fill_color_attr), max(fill_color_attr)), c('white', 'black'))
-  nodeBorderColors <- mapVisualProperty('node border paint', 'median_human_affinity', 'c', c(min(border_color_attr), median(border_color_attr), max(border_color_attr)), c('blue', 'gold', 'red'))
-
-  createVisualStyle(
-    style.name,
-    defaults,
-    list(nodeSizes, edgeWidth, nodeBorderColors, nodeFillColors)
-  )
-
-  setVisualStyle(style.name)
-
-
-
-}
-
 # visualize_mapper_data <- function(mapper_data, is_ballmapper = TRUE) {
 #   nodes = mapper_data[[1]]
 #   edges = mapper_data[[2]]
@@ -79,6 +43,37 @@ visualize_mapper_data <- function(mapper_data, size_attr, border_color_attr, fil
 #   setVisualStyle(style.name)
 # }
 
+# Cytoscape ---------------------------------------------------------------
+
+library(viridisLite)
+
+visualize_mapper_data <- function(mapper_data, size_col, size_data, border_color_col, border_color_data, fill_color_col, fill_color_data, name) {
+  nodes = mapper_data[[1]]
+  edges = mapper_data[[2]]
+
+  createNetworkFromDataFrames(nodes, edges, title = name)
+
+  style.name = paste("selexstyle", runif(1))
+
+  defaults <- list(
+    NODE_SHAPE = "ellipse",
+    NODE_BORDER_WIDTH = 10
+  )
+
+  nodeSizes <- mapVisualProperty('node size', size_col, 'd', size_data, (40 * size_data / max(size_data)) + 20)
+  edgeWidth <- mapVisualProperty('edge width', 'weight', 'c', c(0, .5, 1), c(0, 5, 10))
+  nodeFillColors <- mapVisualProperty('node fill color', fill_color_col, 'c', c(min(fill_color_data), max(fill_color_data)), c('black', 'white'))
+  nodeBorderColors <- mapVisualProperty('node border paint', border_color_col, 'd', border_color_data, lapply(plasma(length(border_color_data)), function(x) substr(x, 1, nchar(x)-2)))
+  createVisualStyle(
+    style.name,
+    defaults,
+    list(nodeSizes, edgeWidth, nodeBorderColors, nodeFillColors)
+  )
+  setVisualStyle(style.name)
+}
+
+
+
 #' Open mapper graph in Cytoscape
 #'
 #' @param mapperobject A set of data frames representing a mapper object, returned by, say, [create_mapper_object()].
@@ -103,7 +98,7 @@ visualize_mapper_data <- function(mapper_data, size_attr, border_color_attr, fil
 #' }
 cymapper <- function(mapper_data, size_attr, border_color_attr, fill_color_attr) {
   # pass to visualizer for........visualizing...
-  visualize_mapper_data(mapper_data, size_attr, border_color_attr, fill_color_attr)
+  visualize_mapper_data(mapper_data, size_col, size_data, border_color_col, border_color_data, fill_color_col, fill_color_data)
 
   # if this isn't here R will print something useless
   return(invisible(NULL))
