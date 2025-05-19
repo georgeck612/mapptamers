@@ -33,6 +33,10 @@ run_link <- function(dist, method) {
 cut_dendrogram <- function(dend, cut_height) {
   # p = ggdendrogram(dend, rotate = FALSE, size = 2)
   # plot(p)
+  dend = as.dendrogram(dend)
+  plot(hang.dendrogram(dend, hang = -1), main = paste("patch clustering, global cut height of ", cut_height))
+
+  abline(h=cut_height, lty = 3)
   return(cutree(dend, h = cut_height))
 }
 
@@ -147,7 +151,7 @@ global_tallest_hierarchical_clusterer <- function(method, dists) {
   plot(hang.dendrogram(global_linkage, hang = -1), main = paste(method, "linkage clustering"))
   cut_height = get_tallest_branch_height(global_linkage)
 
-  abline(h=cut_height)
+  abline(h=cut_height, lty = 3)
   dend_plot = as.ggdend(global_linkage)
   # print(ggplot(dend_plot) + geom_hline(yintercept = cut_height, lty = 2))
   print(cut_height)
