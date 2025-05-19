@@ -159,10 +159,9 @@ cytoviz2 = function(mapptamer, name) {
 
 source("aptamer_clusterer.R")
 
-num_patches = 10
 percent_overlap = 25
 affinity_projection = node_data$Log2.hVSMC.hEC
-affinity_cover = create_width_balanced_cover(min(affinity_projection), max(affinity_projection), num_patches, percent_overlap)
+affinity_cover = create_width_balanced_cover(min(affinity_projection), max(affinity_projection), 4, percent_overlap)
 
 single_edit_affinity_mapptamer = create_mapptamer_graph(edit_dists, affinity_projection, affinity_cover, "single")
 single_tree_affinity_mapptamer = create_mapptamer_graph(tree_dists, affinity_projection, affinity_cover, "single")
@@ -175,7 +174,7 @@ cytoviz1(complete_edit_affinity_mapptamer, "1d_affinity_lens_complete_linkage_ed
 cytoviz1(complete_tree_affinity_mapptamer, "1d_affinity_lens_complete_linkage_tree_distance")
 
 selex_projection = node_data$Log2.R3.9
-selex_cover = create_width_balanced_cover(min(selex_projection), max(selex_projection), num_patches, percent_overlap)
+selex_cover = create_width_balanced_cover(min(selex_projection), max(selex_projection), 17, percent_overlap)
 
 single_edit_selex_mapptamer = create_mapptamer_graph(edit_dists, selex_projection, selex_cover, "single")
 single_tree_selex_mapptamer = create_mapptamer_graph(tree_dists, selex_projection, selex_cover, "single")
