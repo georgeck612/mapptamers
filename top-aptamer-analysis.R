@@ -14,6 +14,8 @@ library(RCy3)
 node_data = na.omit(as.data.frame(read.csv("data/top-nodes.csv")))
 edge_data = na.omit(as.data.frame(read.csv("data/top-edges.csv")))
 
+node_data[,c("hVSMC.hEC", "Log.10.RP10M.9", "Log2.hVSMC.hEC", "Log2.mVSMC.mEC", "Log2.R3.9", "mVSMC.mEC")] = round(node_data[,c("hVSMC.hEC", "Log.10.RP10M.9", "Log2.hVSMC.hEC", "Log2.mVSMC.mEC", "Log2.R3.9", "mVSMC.mEC")], 3)
+
 # making sure R doesn't have any cause to yell at me
 row.names(node_data) = node_data$name
 
@@ -89,7 +91,6 @@ colnames(tree_dists) = node_data$name
 # function which makes a ballmapper graph and populates it with data
 create_mapptamer_graph <- function(dists, filtered, cover, linkage_method) {
   # mapper time
-  print(filtered)
   mapptamer = create_1D_mapper_object(node_data, dists, filtered, cover, clusterer = global_tallest_hierarchical_clusterer(linkage_method, as.dist(dists)))
 
   # get aptamers in vertices of mapper graph
@@ -98,7 +99,6 @@ create_mapptamer_graph <- function(dists, filtered, cover, linkage_method) {
   # calculate median selex data across mapper vertices
   median_log10_final_selex_read = sapply(aptamer_balls, function(x) median(node_data[x$name, "Log.10.RP10M.9"]))
   median_log2_selex_enrichment = sapply(aptamer_balls, function(x) median(node_data[x$name, "Log2.R3.9"]))
-  print(median_log2_selex_enrichment)
 
   # calculate median ASSET data across mapper vertices
   median_human_affinity = sapply(aptamer_balls, function(x) median(node_data[x$name, "hVSMC.hEC"]))
@@ -107,12 +107,12 @@ create_mapptamer_graph <- function(dists, filtered, cover, linkage_method) {
   median_log2_mouse_affinity = sapply(aptamer_balls, function(x) median(node_data[x$name, "mVSMC.mEC"]))
 
   # attach calculated info to mapper dataframe
-  mapptamer[[1]]$median_log10_final_selex_read = round(median_log10_final_selex_read, 5)
-  mapptamer[[1]]$median_log2_selex_enrichment = round(median_log2_selex_enrichment, 5)
-  mapptamer[[1]]$median_human_affinity = round(median_human_affinity, 5)
-  mapptamer[[1]]$median_log2_human_affinity = round(median_log2_human_affinity, 5)
-  mapptamer[[1]]$median_mouse_affinity = round(median_mouse_affinity, 5)
-  mapptamer[[1]]$median_log2__mouse_affinity = round(median_log2_mouse_affinity, 5)
+  mapptamer[[1]]$median_log10_final_selex_read = round(median_log10_final_selex_read, 3)
+  mapptamer[[1]]$median_log2_selex_enrichment = round(median_log2_selex_enrichment, 3)
+  mapptamer[[1]]$median_human_affinity = round(median_human_affinity, 3)
+  mapptamer[[1]]$median_log2_human_affinity = round(median_log2_human_affinity, 3)
+  mapptamer[[1]]$median_mouse_affinity = round(median_mouse_affinity, 3)
+  mapptamer[[1]]$median_log2__mouse_affinity = round(median_log2_mouse_affinity, 3)
 
   return(mapptamer)
 }
@@ -152,8 +152,6 @@ cytoviz2 = function(mapptamer, name) {
   size_data = sort(mapptamer[[1]][, size_col])
   border_color_col = "median_log2_selex_enrichment"
   border_color_data = sort(mapptamer[[1]][, border_color_col])
-  print(border_color_data)
-  print(sort(border_color_data))
   fill_color_col = "tightness"
   fill_color_data = sort(mapptamer[[1]][, fill_color_col])
   visualize_mapper_data(mapptamer, size_col, size_data, border_color_col, border_color_data, fill_color_col, fill_color_data, name)
