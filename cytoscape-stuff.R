@@ -57,10 +57,10 @@ visualize_mapper_data <- function(mapper_data, size_col, size_data, border_color
 
   defaults <- list(
     NODE_SHAPE = "ellipse",
-    NODE_BORDER_WIDTH = 10
+    NODE_BORDER_WIDTH = 25
   )
 
-  nodeSizes <- mapVisualProperty('node size', size_col, 'd', size_data, (40 * size_data / max(size_data)) + 20)
+  nodeSizes <- mapVisualProperty('node size', size_col, 'd', size_data, ((7*size_data / max(size_data)) + 5)^2)
   edgeWidth <- mapVisualProperty('edge width', 'weight', 'c', c(0, .5, 1), c(0, 5, 10))
   nodeFillColors <- mapVisualProperty('node fill color', fill_color_col, 'c', c(min(fill_color_data), max(fill_color_data)), c('black', 'white'))
   nodeBorderColors <- mapVisualProperty('node border paint', border_color_col, 'd', border_color_data, lapply(plasma(length(border_color_data)), function(x) substr(x, 1, nchar(x)-2)))
@@ -70,6 +70,7 @@ visualize_mapper_data <- function(mapper_data, size_col, size_data, border_color
     list(nodeSizes, edgeWidth, nodeBorderColors, nodeFillColors)
   )
   setVisualStyle(style.name)
+  layoutNetwork('attributes-layout nodeAttribute=bin')
 }
 
 
