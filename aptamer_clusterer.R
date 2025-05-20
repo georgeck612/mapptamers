@@ -34,9 +34,7 @@ cut_dendrogram <- function(dend, cut_height) {
   # p = ggdendrogram(dend, rotate = FALSE, size = 2)
   # plot(p)
   dend = as.dendrogram(dend)
-  plot(hang.dendrogram(dend, hang = -1), main = paste("patch clustering, global cut height of ", cut_height))
 
-  abline(h=cut_height, lty = 3)
   return(cutree(dend, h = cut_height))
 }
 
@@ -57,6 +55,12 @@ process_dendrograms <- function(dends, cut_height) {
   return(snipped_dends)
 }
 
+plot_dendrogram <- function(dend, method, cut_height) {
+  dend = as.dendrogram(dend)
+  plot(hang.dendrogram(dend, hang = -1), main = paste(method, "linkage patch clustering, cut height of", cut_height))
+  abline(h=cut_height, lty = 3)
+}
+
 #' Perform single-linkage hierarchical clustering and process dendrograms in a semi-global context.
 #'
 #' @param dist_mats A list of distance matrices to be used for clustering.
@@ -70,6 +74,8 @@ get_hierarchical_clusters <- function(dist_mats, method, cut_height) {
   # we would like to cut non-trivial dendrograms to determine number of clusters
   real_dends = dends[lapply(dends, length) > 1]
   imposter_dends = dends[lapply(dends, length) == 1]
+
+  sapply(real_dends, plot_dendrogram, method = method, cut_height = cut_height)
 
   # cut nontrival dendrograms and get clusters
   processed_dends = process_dendrograms(real_dends, cut_height)
@@ -148,6 +154,7 @@ get_tallest_branch_height <- function(dend) {
 #' create_1D_mapper_object(data, dist(data), projx, cover, hierarchical_clusterer("mcquitty"))
 global_tallest_hierarchical_clusterer <- function(method, dists) {
   global_linkage = as.dendrogram(run_link(dists, method))
+  par(cex.lab = 0.5, cex.axis = 2, cex.main = 3)
   plot(hang.dendrogram(global_linkage, hang = -1), main = paste(method, "linkage clustering"))
   cut_height = get_tallest_branch_height(global_linkage)
 
