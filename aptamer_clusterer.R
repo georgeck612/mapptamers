@@ -1,6 +1,6 @@
 library(fastcluster)
 library(ggplot2)
-library(plotly)
+library(RColorBrewer)
 library(dendextend)
 
 # hierarchical clustering -------------------------------------------------
