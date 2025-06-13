@@ -70,7 +70,7 @@ visualize_mapper_data <- function(mapper_data, size_col, size_data, border_color
     list(nodeSizes, edgeWidth, nodeBorderColors, nodeFillColors)
   )
   setVisualStyle(style.name)
-  layoutNetwork('attributes-layout nodeAttribute=bin')
+  layoutNetwork('attributes-layout nodeAttribute=patch')
 }
 
 
